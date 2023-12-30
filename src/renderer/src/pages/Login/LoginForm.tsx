@@ -1,15 +1,11 @@
-import {
-  Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Input,
-} from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { Password } from 'primereact/password';
+import { Toast } from 'primereact/toast';
+import { useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
-
-import { colors } from '../../theme';
 
 const loginSchema = z.object({
   email: z.string().email('Digite um Email válido'),
@@ -19,6 +15,8 @@ const loginSchema = z.object({
 export type LoginFormOutput = z.output<typeof loginSchema>;
 
 export function LoginForm() {
+  const toastRef = useRef<Toast>(null);
+
   const {
     control,
     handleSubmit,
@@ -32,69 +30,64 @@ export function LoginForm() {
     console.log(data);
   }
 
+  function onFailToSubmitForm() {
+    const toast = toastRef.current;
+    if (toast) {
+      toast.show({
+        severity: 'error',
+        icon: 'pi pi-exclamation-circle',
+        summary: 'Erro ao logar! Revise os campos e tente novamente',
+      });
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmitLoginForm)}>
-      <Controller
-        control={control}
-        name="email"
-        render={({ field: { onChange, value }, fieldState: { error } }) => (
-          <FormControl className="mb-3" isInvalid={!!error?.message}>
-            <FormLabel htmlFor="email" className="text-white">
-              Email
-            </FormLabel>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Digite seu Email"
-              bg={colors.orange[500]}
-              errorBorderColor={colors.error}
-              size="lg"
-              className="text-black placeholder:text-adoptgram-gray-50"
-              value={value}
-              onChange={onChange}
-            />
-            {error?.message ? (
-              <FormErrorMessage>{error.message}</FormErrorMessage>
-            ) : null}
-          </FormControl>
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="password"
-        render={({ field: { onChange, value }, fieldState: { error } }) => (
-          <FormControl className="mb-2" isInvalid={!!error?.message}>
-            <FormLabel htmlFor="password" className="text-white">
-              Senha
-            </FormLabel>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Digite sua Senha"
-              bg={colors.orange[500]}
-              errorBorderColor={colors.error}
-              size="lg"
-              className="text-black placeholder:text-adoptgram-gray-50"
-              value={value}
-              onChange={onChange}
-            />
-            {error?.message ? (
-              <FormErrorMessage>{error.message}</FormErrorMessage>
-            ) : null}
-          </FormControl>
-        )}
-      />
-
-      <Button
-        title="Entrar"
-        type="submit"
-        isLoading={isSubmitting}
-        bg={colors.orange[500]}
-        width="100%"
+    <>
+      <form
+        className="flex flex-col gap-y-5 mt-3"
+        onSubmit={handleSubmit(onSubmitLoginForm, onFailToSubmitForm)}
       >
-        Entrar
-      </Button>
-    </form>
+        <Controller
+          name="email"
+          control={control}
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <InputText
+              className={error?.message ? 'p-invalid' : ''}
+              placeholder="Email"
+              type="email"
+              keyfilter="email"
+              value={value}
+              onChange={onChange}
+            />
+          )}
+        />
+
+        <Controller
+          name="password"
+          control={control}
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <Password
+              className={error?.message ? 'p-invalid' : ''}
+              placeholder="Senha"
+              type="password"
+              keyfilter="alphanum"
+              value={value}
+              onChange={onChange}
+              feedback={false}
+              toggleMask
+            />
+          )}
+        />
+
+        <Button
+          label="Entrar"
+          type="submit"
+          icon="pi pi-sign-in"
+          severity="success"
+          rounded
+        />
+      </form>
+      <Toast ref={toastRef} title="Erro" position="bottom-right" />
+    </>
   );
 }

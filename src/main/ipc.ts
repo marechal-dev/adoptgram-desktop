@@ -14,4 +14,4 @@ ipcMain.handle(
     AuthService.authenticate(payload),
 );
 
-ipcMain.handle(IPC.ACCOUNTS.FETCH_ALL, () => {});
+ipcMain.handle(IPC.ACCOUNTS.COMMON_USERS.FETCH_ALL, () => {});
